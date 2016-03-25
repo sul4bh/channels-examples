@@ -50,3 +50,13 @@ def disconnect_blog(message, slug):
     # It's called .discard() because if the reply channel is already there it
     # won't fail - just like the set() type.
     Group(liveblog.group_name).discard(message.reply_channel)
+
+
+def http_consumer(message):
+    # Make standard HTTP response - access ASGI path attribute directly
+    from django.http import HttpResponse
+    response = HttpResponse("Hello world! You asked for %s" % message.content['path'])
+    # Encode that response into message format (ASGI)
+    from channels.handler import AsgiHandler
+    for chunk in AsgiHandler.encode_response(response):
+        message.reply_channel.send(chunk)

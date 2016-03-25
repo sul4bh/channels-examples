@@ -1,5 +1,7 @@
 from channels import route
-from posts.consumers import connect_blog, disconnect_blog
+from channels.staticfiles import StaticFilesConsumer
+
+from posts.consumers import connect_blog, disconnect_blog, http_consumer
 
 
 # The channel routing defines what channels get handled by what consumers,
@@ -13,6 +15,8 @@ channel_routing = [
 
     # Called when the client closes the socket
     route("websocket.disconnect", disconnect_blog, path=r'^/liveblog/(?P<slug>[^/]+)/stream/$'),
+
+    route("http.request", StaticFilesConsumer()),
 
     # A default "http.request" route is always inserted by Django at the end of the routing list
     # that routes all unmatched HTTP requests to the Django view system. If you want lower-level

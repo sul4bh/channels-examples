@@ -58,23 +58,23 @@ Suggested Exercises
 If you want to try out making some changes and getting a feel for Channels,
 here's some ideas and hints on how to do them:
 
-* Make the posts disappear immediately on post deletion. You'll need to send
+#. Make the posts disappear immediately on post deletion. You'll need to send
   notifications triggered on the model delete, in a similar way to the ones
   for save, and modify the JavaScript to understand them.
 
-* Implement a view of all liveblogs at once. You'll need to make a new group
+#. Implement a view of all liveblogs at once. You'll need to make a new group
   that people who connect to this endpoint will subscribe to, insert into that
   group from the save() method as well as the existing per-liveblog group,
   and make new consumers to add and remove people from that group as they
   connect to a WebSocket on a different path (including new routing entries).
 
-* Make the front page list of liveblogs update. You'll need another new WebSocket
+#. Make the front page list of liveblogs update. You'll need another new WebSocket
   endpoint (with new consumers and routing), a new group to send updates down,
   and to tie that group into LiveBlog's save process. Decide if you want to
   send differential updates, or just re-send the whole list each time a new one
   is created. Both have advantages - what are they?
 
-* Try adding Like functionality to the posts, so viewers can "like" a post and
+#. Try adding Like functionality to the posts, so viewers can "like" a post and
   it's sent back over the WebSocket to a ``websocket.receive`` consumer that
   saves the like into the database, then propagates it to all existing clients.
   Can you reuse the existing Post.save() hook? What happens if hundreds

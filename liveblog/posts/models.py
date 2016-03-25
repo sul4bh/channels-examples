@@ -1,7 +1,7 @@
-import json
 from django.db import models
 from django.template.defaultfilters import linebreaks_filter
 from channels import Group
+from data_packets import Packet, CreatePost, DeletePost
 
 
 class Liveblog(models.Model):
@@ -68,24 +68,33 @@ class Post(models.Model):
         """
         return linebreaks_filter(self.body)
 
-    def send_notification(self):
+    def send_notification(self, event=CreatePost.type):
         """
         Sends a notification to everyone in our Liveblog's group with our
         content.
         """
         # Make the payload of the notification. We'll JSONify this, so it has
         # to be simple types, which is why we handle the datetime here.
-        notification = {
-            "id": self.id,
-            "html": self.html_body(),
-            "created": self.created.strftime("%a %d %b %Y %H:%M"),
-        }
+        packet = Packet()
+        if event == DeletePost.type:
+            notification = {
+                "id": self.deleted_id,
+            }
+            packet = DeletePost(notification)
+        elif event == CreatePost.type:
+            notification = {
+                "id"     : self.id,
+                "html"   : self.html_body(),
+                "created": self.created.strftime("%a %d %b %Y %H:%M"),
+            }
+            packet = CreatePost(notification)
+
         # Encode and send that message to the whole channels Group for our
         # liveblog. Note how you can send to a channel or Group from any part
         # of Django, not just inside a consumer.
         Group(self.liveblog.group_name).send({
             # WebSocket text frame, with JSON content
-            "text": json.dumps(notification),
+            "text": packet.serialize()
         })
 
     def save(self, *args, **kwargs):
@@ -96,3 +105,12 @@ class Post(models.Model):
         result = super(Post, self).save(*args, **kwargs)
         self.send_notification()
         return result
+
+    def delete(self, using=None, keep_parents=False):
+        """
+        Hooking send_notification into delete
+        """
+        self.deleted_id = self.id
+        status = super(Post, self).delete(using, keep_parents)
+        self.send_notification(event=DeletePost.type)
+        return status

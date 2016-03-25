@@ -31,15 +31,19 @@
                 // Decode the JSON
                 console.log("Got message " + message.data);
                 var data = JSON.parse(message.data);
-                // Create the inner content of the post div
-                var content = "<h2>" + data.created + "</h2>" + data.html;
-                // See if there's a div to replace it in, or if we should add a new one
-                var existing = $("div[data-post-id=" + data.id + "]");
-                if (existing.length) {
-                    existing.html(content);
-                } else {
-                    var newdiv = $("<div class='post' data-post-id='" + data.id + "'>" + content + "</div>");
-                    $("#posts").prepend(newdiv);
+
+                if (data.type == 'create') {
+                    var content  = "<h2>" + data.payload.created + "</h2>" + data.payload.html;
+                    // See if there's a div to replace it in, or if we should add a new one
+                    var existing = $("div[data-post-id=" + data.payload.id + "]");
+                    if (existing.length) {
+                        existing.html(content);
+                    } else {
+                        var newdiv = $("<div class='post' data-post-id='" + data.payload.id + "'>" + content + "</div>");
+                        $("#posts").prepend(newdiv);
+                    }
+                }else if (data.type == 'delete'){
+                    $('[data-post-id="'+data.payload.id+'"]').remove();
                 }
             };
 
